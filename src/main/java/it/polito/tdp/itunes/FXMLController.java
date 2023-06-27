@@ -5,9 +5,13 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.itunes.model.Genre;
 import it.polito.tdp.itunes.model.Model;
+import it.polito.tdp.itunes.model.Track;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,7 +36,7 @@ public class FXMLController {
     private Button btnPlaylist; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbGenere"
-    private ComboBox<?> cmbGenere; // Value injected by FXMLLoader
+    private ComboBox<Genre> cmbGenere; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDTOT"
     private TextField txtDTOT; // Value injected by FXMLLoader
@@ -48,12 +52,52 @@ public class FXMLController {
 
     @FXML
     void doCalcolaPlaylist(ActionEvent event) {
+    	
+    	this.txtResult.clear();
+    	double tempoTot = Double.parseDouble(txtDTOT.getText());
+    	
+    	List<Track> playlistIdeale = new ArrayList<>(this.model.laMiaPlaylist(tempoTot));
+    	for(Track t : playlistIdeale) {
+    		this.txtResult.appendText(t.getName()+"\n");
+    	}
+
+		this.txtResult.appendText("La playlist ha " + playlistIdeale.size() +" brani");
 
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	
+    	Genre g = this.cmbGenere.getValue();
+    	double min = 0.0;
+    	double max = 0.0;
+    	if(g==null) {
+    		this.txtResult.setText("Selezionare un genere");
+    	}
+    	try {
+    	 min =Double.parseDouble(this.txtMin.getText());
+    	 max =Double.parseDouble(this.txtMax.getText());if((min==0.0 && max==0.0 )) {
+    		
+    	}
+    	
+    	}catch(NumberFormatException e ) {
+    		this.txtResult.setText("Inserire dei valori numerici");
+    	}
+    	
+    	if((min==0.0 && max==0.0 )) {
+    		this.txtResult.appendText("Si prega di inserire valori maggiori di 0");
+    		
+    	}
+    	
+    	this.model.createGraph(g, min, max);
+    	this.txtResult.appendText("Grafo creato correttamente\n");
+    	this.txtResult.appendText("Vi sono in tutto: "+ this.model.nNodes() +" vertici\n");
+    	this.txtResult.appendText("Vi sono in tutto: "+ this.model.nEdge() +" archi\n");
+    	
+    	for(String s : this.model.compConnessa()) {
+    		this.txtResult.appendText(s);
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -70,6 +114,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.cmbGenere.getItems().addAll(this.model.loadGenres());
     }
 
 }
